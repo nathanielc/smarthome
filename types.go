@@ -8,11 +8,11 @@ import (
 )
 
 const (
-	Set     = "set"
-	Get     = "get"
-	Command = "command"
-	Status  = "status"
-	Connect = "connect"
+	setPath     = "set"
+	getPath     = "get"
+	commandPath = "command"
+	statusPath  = "status"
+	connectPath = "connect"
 )
 
 type Value struct {

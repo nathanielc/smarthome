@@ -1,4 +1,4 @@
-package server
+package smarthome
 
 import (
 	"encoding/json"
@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/eclipse/paho.mqtt.golang"
-	"github.com/nathanielc/smarthome"
 )
 
 const (
@@ -18,7 +17,7 @@ type Handler interface {
 	// Set handles a set request.
 	Set(toplevel, item string, value interface{})
 	// Get handles a get request.
-	Get(toplevel, item string) (smarthome.Value, bool)
+	Get(toplevel, item string) (Value, bool)
 	// Command handles a command request.
 	Command(toplevel string, cmd []byte)
 }
@@ -40,9 +39,9 @@ type Server interface {
 	PublishHWStatus(ConnectionState) error
 
 	// Publish a status message.
-	PublishStatus(item string, value smarthome.Value) error
+	PublishStatus(item string, value Value) error
 	// Publish a one-shot message.
-	PublishOneShotStatus(item string, value smarthome.Value) error
+	PublishOneShotStatus(item string, value Value) error
 }
 
 type server struct {
@@ -62,19 +61,19 @@ type server struct {
 }
 
 func New(toplevel string, h Handler, opts *mqtt.ClientOptions) Server {
-	ct := path.Join(toplevel, smarthome.Connect)
+	ct := path.Join(toplevel, connectPath)
 	// Setup Will
 	opts.SetWill(ct, "0", 0, false)
-	st := path.Join(toplevel, smarthome.Set)
+	st := path.Join(toplevel, setPath)
 	sta := st + "/"
 	return &server{
 		toplevel:         toplevel,
 		connectTopic:     ct,
 		setTopic:         st,
 		setTopicAnchored: sta,
-		getTopic:         path.Join(toplevel, smarthome.Get),
-		commandTopic:     path.Join(toplevel, smarthome.Command),
-		statusTopic:      path.Join(toplevel, smarthome.Status),
+		getTopic:         path.Join(toplevel, getPath),
+		commandTopic:     path.Join(toplevel, commandPath),
+		statusTopic:      path.Join(toplevel, statusPath),
 		h:                h,
 		opts:             opts,
 	}
@@ -102,7 +101,7 @@ func (s *server) Connect() error {
 
 func (s *server) handleSet(c mqtt.Client, m mqtt.Message) {
 	item := strings.TrimPrefix(m.Topic(), s.setTopicAnchored)
-	v := smarthome.PayloadToValue(m.Payload())
+	v := PayloadToValue(m.Payload())
 	s.h.Set(s.toplevel, item, v.Value)
 }
 
@@ -135,13 +134,13 @@ func (s *server) PublishHWStatus(state ConnectionState) error {
 	return token.Error()
 }
 
-func (s *server) PublishStatus(item string, value smarthome.Value) error {
+func (s *server) PublishStatus(item string, value Value) error {
 	return s.publishStatus(item, value, false)
 }
-func (s *server) PublishOneShotStatus(item string, value smarthome.Value) error {
+func (s *server) PublishOneShotStatus(item string, value Value) error {
 	return s.publishStatus(item, value, true)
 }
-func (s *server) publishStatus(item string, value smarthome.Value, oneshot bool) error {
+func (s *server) publishStatus(item string, value Value, oneshot bool) error {
 	var payload []byte
 	if value.Time.IsZero() && value.LastChanged.IsZero() {
 		payload = []byte(fmt.Sprintf("%v", value.Value))

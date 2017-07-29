@@ -1,13 +1,12 @@
-package client
+package smarthome
 
 import (
 	"path"
 
 	"github.com/eclipse/paho.mqtt.golang"
-	"github.com/nathanielc/smarthome"
 )
 
-type SubscribeCallback func(toplevel, item string, value smarthome.Value)
+type SubscribeCallback func(toplevel, item string, value Value)
 
 type Client interface {
 	// Set publishes a set message with the value
@@ -32,37 +31,37 @@ type client struct {
 }
 
 func (c *client) Set(toplevel, item string, value string) error {
-	topic := path.Join(toplevel, smarthome.Set, item)
+	topic := path.Join(toplevel, setPath, item)
 	token := c.c.Publish(topic, 0, false, value)
 	token.Wait()
 	return token.Error()
 }
 
 func (c *client) Get(toplevel, item string) error {
-	getTopic := path.Join(toplevel, smarthome.Get, item)
+	getTopic := path.Join(toplevel, getPath, item)
 	token := c.c.Publish(getTopic, 0, false, "?")
 	token.Wait()
 	return token.Error()
 }
 
 func (c *client) Command(toplevel string, cmd []byte) error {
-	topic := path.Join(toplevel, smarthome.Command)
+	topic := path.Join(toplevel, commandPath)
 	token := c.c.Publish(topic, 0, false, cmd)
 	token.Wait()
 	return token.Error()
 }
 
 func (c *client) Subscribe(toplevel, item string, callback SubscribeCallback) error {
-	topic := path.Join(toplevel, smarthome.Status, item)
+	topic := path.Join(toplevel, statusPath, item)
 	token := c.c.Subscribe(topic, 0, func(c mqtt.Client, m mqtt.Message) {
-		value := smarthome.PayloadToValue(m.Payload())
+		value := PayloadToValue(m.Payload())
 		callback(toplevel, item, value)
 	})
 	token.Wait()
 	return token.Error()
 }
 func (c *client) Unsubscribe(toplevel, item string) error {
-	topic := path.Join(toplevel, smarthome.Status, item)
+	topic := path.Join(toplevel, statusPath, item)
 	token := c.c.Unsubscribe(topic)
 	token.Wait()
 	return token.Error()
