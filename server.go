@@ -60,7 +60,7 @@ type server struct {
 	c    mqtt.Client
 }
 
-func New(toplevel string, h Handler, opts *mqtt.ClientOptions) Server {
+func NewServer(toplevel string, h Handler, opts *mqtt.ClientOptions) Server {
 	ct := path.Join(toplevel, connectPath)
 	// Setup Will
 	opts.SetWill(ct, "0", 0, false)

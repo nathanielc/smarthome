@@ -20,14 +20,21 @@ type Client interface {
 	// Subscribe to receive callbacks whenever a status message is received.
 	Subscribe(toplevel, item string, callback SubscribeCallback) error
 	// Unsubscribe to stop receiving subscription callbacks.
-	Unsubscribe(toplevel, item string)
+	Unsubscribe(toplevel, item string) error
 }
 
 type client struct {
-	opts *mqtt.ClientOptions
-	c    mqtt.Client
+	c mqtt.Client
+}
 
-	statusSubed bool
+func NewClient(opts *mqtt.ClientOptions) (Client, error) {
+	c := mqtt.NewClient(opts)
+	if token := c.Connect(); token.Wait() && token.Error() != nil {
+		return nil, token.Error()
+	}
+	return &client{
+		c: c,
+	}, nil
 }
 
 func (c *client) Set(toplevel, item string, value string) error {
