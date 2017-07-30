@@ -87,13 +87,13 @@ func (s *server) Connect() error {
 
 	// Subscribe to Set, Get and Command topics
 
-	if token := s.c.Subscribe(s.setTopic, 0, s.handleSet); token.Wait() && token.Error() != nil {
+	if token := s.c.Subscribe(path.Join(s.setTopic, "#"), 0, s.handleSet); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	if token := s.c.Subscribe(s.getTopic, 0, s.handleGet); token.Wait() && token.Error() != nil {
+	if token := s.c.Subscribe(path.Join(s.getTopic, "#"), 0, s.handleGet); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
-	if token := s.c.Subscribe(s.commandTopic, 0, s.handleCommand); token.Wait() && token.Error() != nil {
+	if token := s.c.Subscribe(path.Join(s.commandTopic, "#"), 0, s.handleCommand); token.Wait() && token.Error() != nil {
 		return token.Error()
 	}
 	return nil
