@@ -51,6 +51,7 @@ type server struct {
 	setTopic,
 	setTopicAnchored,
 	getTopic,
+	getTopicAnchored,
 	commandTopic,
 	statusTopic string
 
@@ -64,14 +65,19 @@ func NewServer(toplevel string, h Handler, opts *mqtt.ClientOptions) Server {
 	ct := path.Join(toplevel, connectPath)
 	// Setup Will
 	opts.SetWill(ct, "0", 0, false)
+
 	st := path.Join(toplevel, setPath)
 	sta := st + "/"
+	gt := path.Join(toplevel, getPath)
+	gta := gt + "/"
+
 	return &server{
 		toplevel:         toplevel,
 		connectTopic:     ct,
 		setTopic:         st,
 		setTopicAnchored: sta,
-		getTopic:         path.Join(toplevel, getPath),
+		getTopic:         gt,
+		getTopicAnchored: gta,
 		commandTopic:     path.Join(toplevel, commandPath),
 		statusTopic:      path.Join(toplevel, statusPath),
 		h:                h,
@@ -106,7 +112,7 @@ func (s *server) handleSet(c mqtt.Client, m mqtt.Message) {
 }
 
 func (s *server) handleGet(c mqtt.Client, m mqtt.Message) {
-	item := strings.TrimPrefix(m.Topic(), s.setTopicAnchored)
+	item := strings.TrimPrefix(m.Topic(), s.getTopicAnchored)
 	v, ok := s.h.Get(s.toplevel, item)
 	if ok {
 		s.publishStatus(item, v, true)
