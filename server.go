@@ -6,7 +6,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/eclipse/paho.mqtt.golang"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 const (
@@ -69,7 +69,7 @@ type server struct {
 func NewServer(toplevel string, h Handler, opts *mqtt.ClientOptions) Server {
 	ct := path.Join(toplevel, connectedPath)
 	// Setup Will
-	opts.SetWill(ct, "0", 0, false)
+	opts.SetWill(ct, "0", 2, true)
 
 	st := path.Join(toplevel, setPath)
 	sta := st + "/"
@@ -140,7 +140,7 @@ func (s *server) PublishHWStatus(state ConnectionState) error {
 	case Connected:
 		value = "2"
 	}
-	token := s.c.Publish(s.connectTopic, 0, false, value)
+	token := s.c.Publish(s.connectTopic, 1, true, value)
 	token.Wait()
 	return token.Error()
 }
