@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/eclipse/paho.mqtt.golang"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 const (
@@ -15,6 +15,7 @@ const (
 	connectedPath = "connected"
 
 	statusPathComplete = "/" + statusPath + "/"
+	allStatusTopic     = "+" + statusPathComplete + "#"
 )
 
 type Value struct {

@@ -17,12 +17,9 @@ type Device struct {
 	Value    Value
 }
 
-func NewDeviceLookup(c Client) (DeviceLookup, error) {
+func NewDeviceLookup(c Client) DeviceLookup {
 	// Subscribe to all status messages
-	sub, err := c.Subscribe("+", "#")
-	if err != nil {
-		return nil, err
-	}
+	sub := c.Subscribe("+", "#")
 	dl := &deviceLookup{
 		devices: make(map[deviceID]Device),
 		closing: make(chan struct{}),
@@ -32,7 +29,7 @@ func NewDeviceLookup(c Client) (DeviceLookup, error) {
 		defer dl.wg.Done()
 		dl.watch(sub)
 	}()
-	return dl, nil
+	return dl
 }
 
 type deviceLookup struct {
